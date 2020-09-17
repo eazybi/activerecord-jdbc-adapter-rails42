@@ -3,7 +3,10 @@ MYSQL_CONFIG = {
   :password => 'arjdbc',
   :adapter  => 'mysql2',
   :database => 'arjdbc_test',
-  :host     => 'localhost'
+  :host     => 'localhost',
+  :properties => {
+    'allowPublicKeyRetrieval' => true
+  }
 }
 
 unless ( ps = ENV['PREPARED_STATEMENTS'] || ENV['PS'] ).nil?
