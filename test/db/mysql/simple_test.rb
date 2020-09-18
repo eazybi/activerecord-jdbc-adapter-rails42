@@ -263,6 +263,7 @@ class MySQLSimpleTest < Test::Unit::TestCase
       config[:username] = MYSQL_CONFIG[:username]
       config[:password] = MYSQL_CONFIG[:password]
       config[:database] = MYSQL_CONFIG[:database]
+      config[:properties] = {'serverTimezone' => 'Europe/Riga'}
       with_connection(config) do |connection|
         assert_match /^jdbc:mysql:\/\/:\d*\//, connection.config[:url]
       end

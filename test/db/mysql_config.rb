@@ -5,7 +5,8 @@ MYSQL_CONFIG = {
   :database => 'arjdbc_test',
   :host     => 'localhost',
   :properties => {
-    'allowPublicKeyRetrieval' => true
+    'allowPublicKeyRetrieval' => true,
+    'serverTimezone' => 'Europe/Riga'
   }
 }
 
