@@ -413,4 +413,40 @@ public class MySQLRubyJdbcConnection extends RubyJdbcConnection {
         return cancelTimer;
     }
 
+    // PATCH: this method added to avoid HOUR_OF_DAY error that occurs while casting DB value to Java Date object.
+    // Occurs when app/DB timezone is not UTC and date is retrieved from updated_at_utc field that does not exist in server TZ.
+    @Override
+    protected IRubyObject timestampToRuby(final ThreadContext context, // TODO
+        final Ruby runtime, final ResultSet resultSet, final int column)
+        throws SQLException {
+
+        final Timestamp value;
+
+        try {
+            value = resultSet.getTimestamp(column);
+            if ( value == null ) {
+                if ( resultSet.wasNull() ) return runtime.getNil();
+                return runtime.newString(); // ""
+            }
+        }
+        catch (SQLException e) {
+            if (e.getMessage().contains("HOUR_OF_DAY")) {
+                return stringToRuby(context, runtime, resultSet, column);
+            }
+            else { throw e; }
+        }
+
+        final RubyString strValue = timestampToRubyString(runtime, value.toString());
+        if ( rawDateTime != null && rawDateTime.booleanValue() ) return strValue;
+
+        final IRubyObject adapter = callMethod(context, "adapter"); // self.adapter
+        if ( adapter.isNil() ) return strValue; // NOTE: we warn on init_connection
+
+        if ( usesType(runtime) ) {
+            // NOTE: this CAN NOT be 100% correct - as :timestamp is just a type guess!
+            return typeCastFromDatabase(context, adapter, runtime.newSymbol("timestamp"), strValue);
+        }
+        return adapter.callMethod(context, "_string_to_timestamp", strValue);
+    }
+
 }
